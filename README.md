@@ -1,6 +1,14 @@
-# SpendWise MCP — Local Expense Tracker
+# SpendWise MCP — Local Expense Tracker (Practice Project)
 
-A local AI expense-tracking agent built with **LangChain**, **FastMCP**, and **DeepSeek**, backed by a local **SQLite** database and exposed through a **Streamlit** chat UI.
+A practice project designed to explore and learn **LangChain agents**, custom **FastMCP** servers, and **Streamlit** frontends. This repository implements a local AI expense-tracking assistant backed by a local **SQLite** database, communicated over **stdio** via MCP (Model Context Protocol).
+
+## Purpose & Learning Objectives
+
+This repository was created as a practice environment to gain hands-on experience with:
+- **Model Context Protocol (MCP)**: Building a custom FastMCP server with SQLite backing, exposing specific CRUD and analytics tools, and a dynamic resource (`categories://list`).
+- **LangChain Agents**: Dynamically loading stdio-based MCP tools, instantiating `create_agent` models, and designing comprehensive system prompts.
+- **Session State & Memory**: Leveraging LangChain's `MemorySaver` checkpointer in a Streamlit web interface to support per-tab conversation memory.
+- **Async Python**: Integrating asynchronous SQLite operations via `aiosqlite` with FastMCP server methods.
 
 ## Architecture
 
