@@ -30,3 +30,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Headless local entrypoint
+main.py

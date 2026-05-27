@@ -75,17 +75,11 @@ uv run streamlit run app.py
 ```
 Open http://localhost:8501.
 
-**Headless smoke-test:**
-```bash
-uv run python main.py
-```
-
 ## Project Structure
 
 ```
 spendwise-mcp/
 ├── app.py                  # Streamlit chat UI
-├── main.py                 # Headless / CLI entrypoint
 ├── pyproject.toml
 ├── .env.example
 └── mcp/
