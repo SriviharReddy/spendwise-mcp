@@ -32,4 +32,4 @@ Thumbs.db
 *.swp
 
 # Headless local entrypoint
-main.py
+/main.py
