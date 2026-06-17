@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpendWise AI — Minimalist Financial Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+</head>
+<body>
+  <div class="app">
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="nav-left">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+          <span class="logo-text">SpendWise <span class="logo-badge">MCP</span></span>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <div class="status-pill" id="mcpStatusPill" title="FastMCP Protocol Server Status">
+          <span class="status-dot"></span>
+          <span id="mcpStatusText" class="status-label">FastMCP Initializing...</span>
+        </div>
+
+        <!-- Provider Selector -->
+        <div class="provider-selector" title="Active LLM Provider">
+          <svg class="select-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          <select id="providerSelect" aria-label="LLM Provider">
+            <option value="deepseek">DeepSeek</option>
+            <option value="openai">OpenAI</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="custom">Custom / OpenRouter</option>
+          </select>
+        </div>
+
+        <!-- Dynamic Model Selector (Fetched from /models) -->
+        <div class="provider-selector model-selector-wrap" title="Select Model from Provider /models Endpoint">
+          <svg class="select-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          <select id="modelSelect" aria-label="LLM Model">
+            <option value="">Loading models...</option>
+          </select>
+        </div>
+
+        <!-- Settings Button -->
+        <button id="openSettingsModalBtn" class="btn btn-ghost btn-sm" title="Configure API Keys & Endpoints">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Settings</span>
+        </button>
+        <button id="seedBtn" class="btn btn-ghost btn-sm" title="Seed realistic demonstration data">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m16 6-4 4-4-4"/><path d="M16 18a4 4 0 0 0-8 0"/></svg>
+          <span>Seed Demo</span>
+        </button>
+
+        <button id="openExpenseModalBtn" class="btn btn-primary btn-sm">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>Add Expense</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 3-Column Main Workspace -->
+    <main class="workspace">
+      <!-- Left Column: Live Protocol Stream & FastMCP Observability -->
+      <aside class="panel panel-telemetry">
+        <div class="telemetry-panel-container">
+          <div class="telemetry-panel-header">
+            <div class="telemetry-title-group">
+              <span class="telemetry-pulse"></span>
+              <div>
+                <span class="telemetry-panel-title">System Architecture</span>
+                <span class="telemetry-panel-sub">FastMCP & LangGraph Pipeline</span>
+              </div>
+            </div>
+            <button id="clearTelemetryBtn" class="btn-link" title="Clear activity log">Clear</button>
+          </div>
+
+          <!-- Visual Architecture Pipeline Diagram -->
+          <div class="arch-topology-card">
+            <div class="arch-node" id="nodeClient">
+              <div class="node-icon">💻</div>
+              <div class="node-info">
+                <span class="node-title">Web Client</span>
+                <span class="node-meta">SSE / EventSource</span>
+              </div>
+            </div>
+            <div class="arch-connector"><span class="conn-arrow">↓</span><span class="conn-label">HTTP REST / SSE</span></div>
+            <div class="arch-node" id="nodeAgent">
+              <div class="node-icon">⚡</div>
+              <div class="node-info">
+                <span class="node-title">FastAPI Agent</span>
+                <span class="node-meta">LangGraph Memory</span>
+              </div>
+            </div>
+            <div class="arch-connector"><span class="conn-arrow">↓</span><span class="conn-label">stdio JSON-RPC</span></div>
+            <div class="arch-node active" id="nodeMcp">
+              <div class="node-icon">🔌</div>
+              <div class="node-info">
+                <span class="node-title">FastMCP Server</span>
+                <span class="node-meta">7 Tools &bull; 1 Resource</span>
+              </div>
+            </div>
+            <div class="arch-connector"><span class="conn-arrow">↓</span><span class="conn-label">aiosqlite</span></div>
+            <div class="arch-node" id="nodeDb">
+              <div class="node-icon">🗄️</div>
+              <div class="node-info">
+                <span class="node-title">SQLite Database</span>
+                <span class="node-meta">expenses.db</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visual FastMCP Tool Deck -->
+          <div class="telemetry-section-label">FastMCP Tool Matrix</div>
+          <div class="tools-visual-deck" id="mcpToolsVisualDeck">
+            <div class="tool-deck-card" id="cardTool_add_expense">
+              <div class="tool-deck-ico">➕</div>
+              <div class="tool-deck-body">
+                <div class="tool-deck-name">add_expense</div>
+                <div class="tool-deck-desc">Record a new expense</div>
+              </div>
+              <div class="tool-deck-badge" id="badge_add_expense">0</div>
+            </div>
+            <div class="tool-deck-card" id="cardTool_update_expense">
+              <div class="tool-deck-ico">✏️</div>
+              <div class="tool-deck-body">
+                <div class="tool-deck-name">update_expense</div>
+                <div class="tool-deck-desc">Edit recorded transaction</div>
+              </div>
+              <div class="tool-deck-badge" id="badge_update_expense">0</div>
+            </div>
+            <div class="tool-deck-card" id="cardTool_delete_expense">
+              <div class="tool-deck-ico">🗑️</div>
+              <div class="tool-deck-body">
+                <div class="tool-deck-name">delete_expense</div>
+                <div class="tool-deck-desc">Remove transaction by ID</div>
+              </div>
+              <div class="tool-deck-badge" id="badge_delete_expense">0</div>
+            </div>
+            <div class="tool-deck-card" id="cardTool_list_expenses">
+              <div class="tool-deck-ico">📋</div>
+              <div class="tool-deck-body">
+                <div class="tool-deck-name">list_expenses</div>
+                <div class="tool-deck-desc">Filter & query ledger</div>
+              </div>
+              <div class="tool-deck-badge" id="badge_list_expenses">0</div>
+            </div>
+            <div class="tool-deck-card" id="cardTool_summarize">
+              <div class="tool-deck-ico">📊</div>
+              <div class="tool-deck-body">
+                <div class="tool-deck-name">summarize</div>
+                <div class="tool-deck-desc">Group totals by category/month</div>
+              </div>
+              <div class="tool-deck-badge" id="badge_summarize">0</div>
+            </div>
+            <div class="tool-deck-card" id="cardTool_set_budget">
+              <div class="tool-deck-ico">🎯</div>
+              <div class="tool-deck-body">
+                <div class="tool-deck-name">set_budget</div>
+                <div class="tool-deck-desc">Set monthly category limit</div>
+              </div>
+              <div class="tool-deck-badge" id="badge_set_budget">0</div>
+            </div>
+            <div class="tool-deck-card" id="cardTool_check_budget">
+              <div class="tool-deck-ico">🛡️</div>
+              <div class="tool-deck-body">
+                <div class="tool-deck-name">check_budget</div>
+                <div class="tool-deck-desc">Compare spent vs limit</div>
+              </div>
+              <div class="tool-deck-badge" id="badge_check_budget">0</div>
+            </div>
+          </div>
+
+          <!-- Dynamic Resource Context Capsule -->
+          <div class="telemetry-section-label">Dynamic Resource Injection</div>
+          <div class="resource-capsule">
+            <div class="res-capsule-head">
+              <span class="res-ico">📦</span>
+              <span class="res-uri font-mono">categories://list</span>
+              <span class="res-tag">System Injected</span>
+            </div>
+            <div class="res-tags-list" id="resourceCategoryTags">
+              <span class="res-tag-item">Food</span>
+              <span class="res-tag-item">Housing</span>
+              <span class="res-tag-item">Transport</span>
+              <span class="res-tag-item">Utilities</span>
+              <span class="res-tag-item">Entertainment</span>
+              <span class="res-tag-item">Shopping</span>
+            </div>
+          </div>
+
+          <!-- Live Activity Feed -->
+          <div class="telemetry-section-label">Live Protocol Traffic</div>
+          <div class="telemetry-logs" id="telemetryLogs">
+            <div class="t-line t-system"><span class="t-ts">[SYS]</span> Listening for FastMCP tool frames & SSE events...</div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Column: Financial Intelligence Dashboard -->
+      <section class="panel panel-dashboard">
+        <div class="panel-inner">
+          <!-- Metrics Row -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-meta">
+                <span class="kpi-title">Monthly Spending</span>
+                <span id="kpiDelta" class="badge badge-neutral">Current Month</span>
+              </div>
+              <div class="kpi-number" id="kpiSpent">$0.00</div>
+              <div class="kpi-subtext" id="kpiPrevMonth">vs $0.00 last month</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-meta">
+                <span class="kpi-title">Budget Used</span>
+                <span id="kpiUtilBadge" class="badge badge-success">0%</span>
+              </div>
+              <div class="kpi-number" id="kpiUtil">0%</div>
+              <div class="kpi-subtext" id="kpiLimit">of $0.00 total limit</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-meta">
+                <span class="kpi-title">Top Category</span>
+                <span id="kpiTopCount" class="badge badge-neutral">0 tx</span>
+              </div>
+              <div class="kpi-number highlight" id="kpiTopCat">—</div>
+              <div class="kpi-subtext" id="kpiTopAmt">$0.00 spent</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-meta">
+                <span class="kpi-title">Transactions</span>
+                <span class="badge badge-neutral">SQLite</span>
+              </div>
+              <div class="kpi-number" id="kpiCount">0</div>
+              <div class="kpi-subtext">Recorded in ledger</div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="charts-grid">
+            <!-- Donut Breakdown -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Spending by Category</h3>
+                  <p class="card-subtitle">Distribution of expenses this month</p>
+                </div>
+              </div>
+              <div class="donut-wrap">
+                <div class="donut-canvas-box">
+                  <svg id="donutSvg" viewBox="0 0 180 180"></svg>
+                  <div class="donut-center">
+                    <span class="donut-total-val" id="donutCenterTotal">$0</span>
+                    <span class="donut-total-label">Total</span>
+                  </div>
+                </div>
+                <div class="donut-legend" id="donutLegend">
+                  <!-- Legend items rendered via JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Daily Activity Trend -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Daily Activity</h3>
+                  <p class="card-subtitle">Spending trend over time</p>
+                </div>
+                <div class="chart-tag" id="trendPeakLabel">Daily breakdown</div>
+              </div>
+              <div class="trend-wrap">
+                <div class="trend-chart-container" id="trendContainer">
+                  <svg id="trendSvg" preserveAspectRatio="none"></svg>
+                </div>
+                <div class="trend-footer">
+                  <span>Day 1</span>
+                  <span>Mid Month</span>
+                  <span>End Month</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Budgets Section -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Category Budgets</h3>
+                <p class="card-subtitle">Monthly limit utilization & health</p>
+              </div>
+              <button id="openBudgetModalBtn" class="btn btn-ghost btn-xs">
+                <span>Set Budget</span>
+              </button>
+            </div>
+            <div class="budgets-list" id="budgetsList">
+              <!-- Budget bars rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Transactions Table -->
+          <div class="card table-card">
+            <div class="card-header table-toolbar">
+              <div>
+                <h3 class="card-title">Transaction Ledger</h3>
+                <p class="card-subtitle">All recorded financial entries</p>
+              </div>
+              <div class="table-actions">
+                <div class="input-search-wrap">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input type="text" id="searchInput" placeholder="Search notes or category..." />
+                </div>
+                <select id="categoryFilter" class="select-filter" aria-label="Filter by category">
+                  <option value="">All Categories</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Subcategory & Note</th>
+                    <th class="text-right">Amount</th>
+                    <th class="text-center w-action">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="transactionsBody">
+                  <tr>
+                    <td colspan="5" class="table-empty">Loading transactions...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Agent Workspace -->
+      <section class="panel panel-agent">
+        <div class="agent-container">
+          <!-- Agent Header -->
+          <div class="agent-header">
+            <div class="agent-profile">
+              <div class="agent-avatar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+              </div>
+              <div>
+                <div class="agent-name">SpendWise Assistant</div>
+                <div class="agent-sub">LangGraph Agent &bull; stdio FastMCP</div>
+              </div>
+            </div>
+            <button id="resetChatBtn" class="btn btn-ghost btn-icon" title="Reset conversation session">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+            </button>
+          </div>
+
+          <!-- Pipeline Stepper -->
+          <div class="pipeline-stepper" id="pipelineStepper">
+            <div class="step-item" id="stepPrompt">
+              <span class="step-dot"></span>
+              <span class="step-name">Context</span>
+            </div>
+            <div class="step-sep"></div>
+            <div class="step-item" id="stepReasoning">
+              <span class="step-dot"></span>
+              <span class="step-name">Reasoning</span>
+            </div>
+            <div class="step-sep"></div>
+            <div class="step-item" id="stepMcp">
+              <span class="step-dot"></span>
+              <span class="step-name">MCP Tool</span>
+            </div>
+            <div class="step-sep"></div>
+            <div class="step-item" id="stepSynthesis">
+              <span class="step-dot"></span>
+              <span class="step-name">Synthesis</span>
+            </div>
+          </div>
+
+          <!-- Chat Stream Container -->
+          <div class="chat-viewport" id="chatViewport">
+            <div class="chat-message msg-assistant">
+              <div class="msg-content">
+                <p>Hello! I'm your AI financial assistant connected to a local <strong>FastMCP</strong> server over stdio.</p>
+                <p class="mt-2 text-dim">I can log expenses, analyze spending trends, and manage your category budgets directly in SQLite.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Suggestion Chips -->
+          <div class="chips-container" id="promptChips">
+            <button class="chip" data-prompt="Log $42.50 dinner at Nobu today under Food">🍱 Log $42.50 Dinner</button>
+            <button class="chip" data-prompt="How much have I spent on Food this month?">📊 Food Spending</button>
+            <button class="chip" data-prompt="Check my monthly budget status and highlight any over-budget categories">⚠️ Budget Check</button>
+            <button class="chip" data-prompt="Set my Entertainment monthly budget to $200">🎯 Set Limit $200</button>
+          </div>
+
+          <!-- Chat Input -->
+          <form id="chatForm" class="chat-input-box">
+            <input
+              type="text"
+              id="chatInput"
+              placeholder="Ask a question or log an expense..."
+              autocomplete="off"
+            />
+            <button type="submit" id="sendBtn" class="btn btn-primary btn-icon" title="Send message">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            </button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal: Add Expense -->
+    <div class="modal" id="expenseModal">
+      <div class="modal-backdrop" id="expenseModalBackdrop"></div>
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3 class="modal-title">Record Expense</h3>
+          <button class="btn btn-ghost btn-icon modal-close" id="closeExpenseModalBtn">&times;</button>
+        </div>
+        <form id="expenseForm">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="expAmount">Amount ($) <span class="req">*</span></label>
+              <input type="number" id="expAmount" class="form-control font-mono" step="0.01" min="0.01" placeholder="0.00" required />
+            </div>
+
+            <div class="form-group">
+              <label for="expCategory">Category <span class="req">*</span></label>
+              <select id="expCategory" class="form-control" required></select>
+            </div>
+
+            <div class="form-group">
+              <label for="expSubcategory">Subcategory</label>
+              <input type="text" id="expSubcategory" class="form-control" placeholder="e.g. Groceries, Coffee, Taxi" />
+            </div>
+
+            <div class="form-group">
+              <label for="expNote">Description</label>
+              <input type="text" id="expNote" class="form-control" placeholder="e.g. Lunch with team" />
+            </div>
+
+            <div class="form-group">
+              <label for="expDate">Date</label>
+              <input type="date" id="expDate" class="form-control" />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" id="cancelExpenseModalBtn">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Expense</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Set Budget -->
+    <div class="modal" id="budgetModal">
+      <div class="modal-backdrop" id="budgetModalBackdrop"></div>
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3 class="modal-title">Set Monthly Budget</h3>
+          <button class="btn btn-ghost btn-icon modal-close" id="closeBudgetModalBtn">&times;</button>
+        </div>
+        <form id="budgetForm">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="budCategory">Category <span class="req">*</span></label>
+              <select id="budCategory" class="form-control" required></select>
+            </div>
+
+            <div class="form-group">
+              <label for="budLimit">Monthly Limit ($) <span class="req">*</span></label>
+              <input type="number" id="budLimit" class="form-control font-mono" step="1" min="1" placeholder="e.g. 500" required />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" id="cancelBudgetModalBtn">Cancel</button>
+            <button type="submit" class="btn btn-primary">Set Budget</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+    <!-- Modal: API Keys & Provider Settings -->
+    <div class="modal" id="settingsModal">
+      <div class="modal-backdrop" id="settingsModalBackdrop"></div>
+      <div class="modal-dialog modal-dialog-lg">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title">API Keys & Provider Settings</h3>
+            <p class="modal-subtitle">Configure your API keys to dynamically fetch models from provider endpoints.</p>
+          </div>
+          <button class="btn btn-ghost btn-icon modal-close" id="closeSettingsModalBtn">&times;</button>
+        </div>
+        <form id="settingsForm">
+          <div class="modal-body">
+            <!-- Provider Tabs -->
+            <div class="settings-tabs" role="tablist">
+              <button type="button" class="settings-tab active" data-target="settings-deepseek">DeepSeek</button>
+              <button type="button" class="settings-tab" data-target="settings-openai">OpenAI</button>
+              <button type="button" class="settings-tab" data-target="settings-gemini">Google Gemini</button>
+              <button type="button" class="settings-tab" data-target="settings-custom">Custom / OpenRouter</button>
+            </div>
+
+            <!-- DeepSeek Tab -->
+            <div class="settings-tab-panel active" id="settings-deepseek">
+              <div class="form-group">
+                <label for="keyDeepSeek">DeepSeek API Key</label>
+                <input type="password" id="keyDeepSeek" class="form-control font-mono" placeholder="sk-..." autocomplete="off" />
+                <span class="form-hint">Models queried live from <code>https://api.deepseek.com/models</code></span>
+              </div>
+              <div class="form-group">
+                <label for="baseDeepSeek">Base URL (Optional)</label>
+                <input type="text" id="baseDeepSeek" class="form-control font-mono" placeholder="https://api.deepseek.com" />
+              </div>
+            </div>
+
+            <!-- OpenAI Tab -->
+            <div class="settings-tab-panel" id="settings-openai">
+              <div class="form-group">
+                <label for="keyOpenAI">OpenAI API Key</label>
+                <input type="password" id="keyOpenAI" class="form-control font-mono" placeholder="sk-..." autocomplete="off" />
+                <span class="form-hint">Models queried live from <code>https://api.openai.com/v1/models</code></span>
+              </div>
+              <div class="form-group">
+                <label for="baseOpenAI">Base URL (Optional)</label>
+                <input type="text" id="baseOpenAI" class="form-control font-mono" placeholder="https://api.openai.com/v1" />
+              </div>
+            </div>
+
+            <!-- Gemini Tab -->
+            <div class="settings-tab-panel" id="settings-gemini">
+              <div class="form-group">
+                <label for="keyGemini">Google Gemini API Key</label>
+                <input type="password" id="keyGemini" class="form-control font-mono" placeholder="AIzaSy..." autocomplete="off" />
+                <span class="form-hint">Models queried live from Google Generative AI API</span>
+              </div>
+            </div>
+
+            <!-- Custom Tab -->
+            <div class="settings-tab-panel" id="settings-custom">
+              <div class="form-group">
+                <label for="baseCustom">OpenAI-Compatible Base URL</label>
+                <input type="text" id="baseCustom" class="form-control font-mono" placeholder="https://openrouter.ai/api/v1 or http://localhost:11434/v1" />
+                <span class="form-hint">Must implement standard <code>/models</code> endpoint</span>
+              </div>
+              <div class="form-group">
+                <label for="keyCustom">API Key (Optional for local Ollama/LM Studio)</label>
+                <input type="password" id="keyCustom" class="form-control font-mono" placeholder="Bearer token or sk-..." autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="settings-status-box" id="settingsStatusBox" style="display: none;"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost text-danger" id="clearKeysBtn">Clear Keys</button>
+            <div class="footer-actions">
+              <button type="button" class="btn btn-ghost" id="cancelSettingsModalBtn">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="saveSettingsBtn">Save & Fetch Models</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
