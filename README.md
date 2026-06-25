@@ -1,98 +1,57 @@
-# SpendWise MCP — Local Expense Tracker (Practice Project)
+# SpendWise AI — Agentic MCP Expense Tracker
 
-A practice project designed to explore and learn **LangChain agents**, custom **FastMCP** servers, and **Streamlit** frontends. This repository implements a local AI expense-tracking assistant backed by a local **SQLite** database, communicated over **stdio** via MCP (Model Context Protocol).
+A showcase project demonstrating **Agentic AI Engineering** using the **Model Context Protocol (MCP)**, **FastAPI**, and **LangChain / LangGraph**.
 
-## Purpose & Learning Objectives
+SpendWise pairs a local FastMCP tool server with a real-time single-screen **Financial Intelligence & Agent Observability Dashboard** served directly by FastAPI with zero build steps.
 
-This repository was created as a practice environment to gain hands-on experience with:
-- **Model Context Protocol (MCP)**: Building a custom FastMCP server with SQLite backing, exposing specific CRUD and analytics tools, and a dynamic resource (`categories://list`).
-- **LangChain Agents**: Dynamically loading stdio-based MCP tools, instantiating `create_agent` models, and designing comprehensive system prompts.
-- **Session State & Memory**: Leveraging LangChain's `MemorySaver` checkpointer in a Streamlit web interface to support per-tab conversation memory.
-- **Async Python**: Integrating asynchronous SQLite operations via `aiosqlite` with FastMCP server methods.
+---
 
-## Architecture
-
-```
-┌─────────────────────────────────────────────────┐
-│  Streamlit UI  (app.py)                         │
-│  MemorySaver checkpointer — per-session memory  │
-└───────────────────┬─────────────────────────────┘
-                    │  LangChain create_agent
-                    ▼
-┌─────────────────────────────────────────────────┐
-│  DeepSeek LLM  (deepseek-chat)                  │
-└───────────────────┬─────────────────────────────┘
-                    │  langchain-mcp-adapters
-                    │  stdio transport
-                    ▼
-┌─────────────────────────────────────────────────┐
-│  FastMCP Server  (mcp/mcp-server.py)            │
-│  7 tools · 1 resource                          │
-│  aiosqlite → mcp/expenses.db                   │
-└─────────────────────────────────────────────────┘
-```
-
-## Features
-
-| Tool | Description |
-|---|---|
-| `add_expense` | Record a new expense |
-| `update_expense` | Edit an existing expense by ID |
-| `delete_expense` | Remove an expense by ID |
-| `list_expenses` | Filter and list expenses |
-| `summarize` | Group totals by category / subcategory / month |
-| `set_budget` | Set a monthly budget limit per category |
-| `check_budget` | Show spent vs. limit for any month |
-
-**Resource:** `categories://list` — injected into the agent's system prompt so the LLM always knows valid categories without a tool call.
-
-**Memory:** `MemorySaver` checkpointer with a per-session `thread_id`. Closing/refreshing the browser starts a fresh conversation. The expense data itself persists in SQLite across sessions.
-
-## Setup
+## 🚀 Quickstart (Single Command)
 
 ### Prerequisites
 - Python ≥ 3.13
 - [uv](https://docs.astral.sh/uv/) package manager
-- A [DeepSeek API key](https://platform.deepseek.com/)
-
-### Install
+- Any LLM API Key: **DeepSeek**, **OpenAI**, or **Google Gemini** (or configure in the web UI)
 
 ```bash
+# 1. Clone repository
 git clone https://github.com/your-username/spendwise-mcp.git
 cd spendwise-mcp
 
-cp .env.example .env
-# Edit .env and fill in DEEPSEEK_API_KEY
-
+# 2. Install dependencies
 uv sync
+
+# 3. Launch application
+uv run python app.py
 ```
 
-### Run
+Open **`http://localhost:8000`** in your browser. Configure your API key via the **⚙️ Settings** button in the header or in `.env`.
 
-**Streamlit UI (recommended):**
-```bash
-uv run streamlit run app.py
-```
-Open http://localhost:8501.
+---
 
-## Project Structure
+## 🌟 Key Highlights
 
-```
-spendwise-mcp/
-├── app.py                  # Streamlit chat UI
-├── pyproject.toml
-├── .env.example
-└── mcp/
-    ├── mcp-server.py       # FastMCP server (stdio, aiosqlite)
-    ├── categories.json     # Valid expense categories
-    └── expenses.db         # SQLite database (git-ignored)
-```
+- **Model Context Protocol (MCP)**: Native stdio JSON-RPC integration with a standalone `FastMCP` server exposing 7 financial tools and dynamic `categories://list` resource injection.
+- **Dynamic `/models` Discovery**: Real-time model discovery from provider endpoints (DeepSeek, OpenAI, Google Gemini, OpenRouter/Custom) with client-side API key configuration.
+- **Real-Time Agent Observability**: Visual system architecture topology map, live tool execution cards with latency badges, and streaming Server-Sent Events (SSE).
+- **Auto-Syncing Financial Hub**: Category breakdown donut chart, daily spending trend activity, budget health progress meters, and transaction ledger that update live on agent mutations.
+- **Zero-Build Architecture**: 100% Python-powered with native web standards—no Node.js or npm dependencies required.
 
-## Tech Stack
+---
 
-- [LangChain](https://python.langchain.com/) — `create_agent`, `MemorySaver`
-- [langchain-mcp-adapters](https://github.com/langchain-ai/langchain-mcp-adapters) — stdio MCP transport
-- [FastMCP](https://gofastmcp.com/) — MCP server framework
-- [aiosqlite](https://aiosqlite.omnilib.dev/) — async SQLite
-- [DeepSeek](https://platform.deepseek.com/) — `deepseek-chat` LLM
-- [Streamlit](https://streamlit.io/) — chat UI
+## 📚 Documentation
+
+Detailed technical references are available in the **`docs/`** directory:
+
+- 🏛️ **[System Architecture](docs/architecture.md)** — Architectural design, stdio transport flow, LangGraph memory checkpointer, and SSE streaming pipeline.
+- 🛠️ **[FastMCP Tools & Resources](docs/mcp-tools.md)** — Complete schema reference for all 7 FastMCP tools and the `categories://list` resource.
+- 📡 **[REST API & SSE Reference](docs/api-reference.md)** — Specification for REST endpoints (`/api/expenses`, `/api/budgets`, `/api/models`, etc.) and the streaming event protocol.
+
+---
+
+## 💡 Example Prompts to Try
+
+- 🍱 *"Log $42.50 dinner at Nobu today under Food"*
+- 📊 *"How much have I spent on Food and Dining this month?"*
+- ⚠️ *"Check my monthly budget status and highlight any over-budget categories"*
+- 🎯 *"Set my Entertainment monthly budget to $200"*
