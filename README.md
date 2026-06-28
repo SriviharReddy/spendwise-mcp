@@ -4,6 +4,8 @@ A showcase project demonstrating **Agentic AI Engineering** using the **Model Co
 
 SpendWise pairs a local FastMCP tool server with a real-time single-screen **Financial Intelligence & Agent Observability Dashboard** served directly by FastAPI with zero build steps.
 
+
+![SpendWise AI Showcase Dashboard](docs/assets/screenshot.png)
 ---
 
 ## 🚀 Quickstart (Single Command)

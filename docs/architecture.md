@@ -4,6 +4,9 @@ SpendWise AI is built on a decoupled, asynchronous architecture connecting a web
 
 ---
 
+![SpendWise Showcase Interface](assets/screenshot.png)
+
+
 ## ⚡ Architecture Flow
 
 ```
